@@ -48,7 +48,8 @@ CMAKE_OPTIONS += \
 	-DENABLE_DCTDECODER=libjpeg \
 	-DENABLE_GPGME=OFF \
 	-DUSE_CMS=lcms2 \
-	-DFONT_CONFIGURATION=fontconfig
+	-DFONT_CONFIGURATION=fontconfig \
+	-DENABLE_BOOST=OFF
 
 define Package/poppler/install
 	$(INSTALL_DIR) $(1)/usr/bin $(1)/usr/lib
