@@ -25,7 +25,7 @@ define Package/poppler
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE:=Poppler PDF rendering library
-  DEPENDS:=+libpng +libtiff +libjpeg +zlib +lcms2 +fontconfig +libpthread +libfreetype +libstdcpp +libcairo +glib2 +libintl-full +curl +libnss +nspr +boost
+  DEPENDS:=+libpng +libtiff +libjpeg +zlib +lcms2 +fontconfig +libpthread +libfreetype +libstdcpp +glib2 +libintl-full +curl +libnss +nspr
   URL:=http://poppler.freedesktop.org/
   SUBMENU:=Printing
 endef
@@ -35,20 +35,22 @@ define Package/poppler/description
 endef
 
 CMAKE_OPTIONS += \
-	-DENABLE_GLIB=OFF \
+	-DENABLE_GLIB=ON \
+	-DENABLE_UNSTABLE_API_ABI_HEADERS=ON \
 	-DENABLE_GTK_DOC=OFF \
 	-DBUILD_GTK_TESTS=OFF \
 	-DENABLE_QT5=OFF \
 	-DENABLE_QT6=OFF \
 	-DBUILD_QT5_TESTS=OFF \
 	-DBUILD_QT6_TESTS=OFF \
-	-DENABLE_CPP=OFF \
+	-DENABLE_CPP=ON \
 	-DENABLE_ZLIB_UNCOMPRESS=ON \
 	-DENABLE_LIBOPENJPEG=none \
 	-DENABLE_DCTDECODER=libjpeg \
 	-DENABLE_GPGME=OFF \
 	-DUSE_CMS=lcms2 \
-	-DFONT_CONFIGURATION=fontconfig
+	-DFONT_CONFIGURATION=fontconfig \
+	-DENABLE_BOOST=OFF
 
 define Package/poppler/install
 	$(INSTALL_DIR) $(1)/usr/bin $(1)/usr/lib
@@ -58,8 +60,8 @@ endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/cpp $(1)/usr/lib
-#	$(CP) -r $(PKG_INSTALL_DIR)/usr/include/poppler $(1)/usr/include/
-#	$(CP) -r $(PKG_BUILD_DIR)/cpp/poppler-version.h $(1)/usr/include/cpp
+	$(CP) -r $(PKG_INSTALL_DIR)/usr/include/poppler $(1)/usr/include/
+	$(CP) -r $(PKG_BUILD_DIR)/cpp/poppler-version.h $(1)/usr/include/cpp
 	$(CP) -r $(PKG_BUILD_DIR)/cpp/poppler-global.h $(1)/usr/include/cpp
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/* $(1)/usr/lib
 endef

@@ -7,10 +7,10 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=openprinting-cups-filters
 PKG_VERSION:=1.28.16
-PKG_RELEASE:=1
+PKG_RELEASE:=3
 
 PKG_SOURCE:=cups-filters-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=/download/cups-filters/
+PKG_SOURCE_URL:=http://www.openprinting.org/download/cups-filters/
 PKG_MD5SUM:=24bed15110499fd652d65d6baab85ca6
 PKG_BUILD_DIR:=$(BUILD_DIR)/cups-filters-$(PKG_VERSION)
 
@@ -18,13 +18,15 @@ PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-EXTRA_CFLAGS+=-DHAVE_CPP_POPPLER_VERSION_H
+# Use TARGET_CXXFLAGS for C++ specific stuff and let the build system handle paths
+TARGET_CXXFLAGS += -std=c++17 -DHAVE_CPP_POPPLER_VERSION_H -w
+TARGET_CPPFLAGS += -I$(STAGING_DIR)/usr/include/poppler
 
 define Package/openprinting-cups-filters
   SECTION:=Net
   CATEGORY:=Network
   TITLE:=OpenPrinting CUPS filters
-  DEPENDS:=+cups +libcupsimage +fontconfig +libijs +libtiff +libjpeg +libpng +poppler +qpdf +glib2
+  DEPENDS:=+cups +libcupsimage +fontconfig +libijs +libtiff +libjpeg +libpng +poppler +qpdf +libstdcpp +libdbus +libexif +libavahi-client
   URL:=http://www.openprinting.org
   SUBMENU:=Printing
 endef
@@ -37,16 +39,31 @@ endef
 define Build/Configure
 	$(call Build/Configure/Default, \
 	--enable-imagefilters \
-	--with-pdftops=gs \
-	--with-gs-path=/usr/bin/gs \
-	--with-pdftops-path=/usr/bin/gs \
+	--with-pdftops=pdftops \
+	--with-pdftops-path=/usr/bin/pdftops \
+	--disable-avahi \
+	--disable-glib \
 	--disable-gnutls \
 	--disable-openssl \
 	--disable-cdsassl \
 	--disable-ssl \
 	--disable-gssapi \
-	--disable-avahi \
+	--with-fontdir=/usr/share/fonts \
+	--with-cups-config=$(STAGING_DIR)/usr/bin/cups-config \
+	--with-fontconfig-cflags="-I$(STAGING_DIR)/usr/include" \
+	--with-fontconfig-libs="-L$(STAGING_DIR)/usr/lib -lfontconfig" \
+	--with-poppler-cflags="-I$(STAGING_DIR)/usr/include/poppler/cpp -I$(STAGING_DIR)/usr/include/poppler" \
+	--with-poppler-libs="-L$(STAGING_DIR)/usr/lib -lpoppler -lpoppler-cpp" \
 	)
+endef
+
+# 3. The "Surgery": This runs after Configure and before Compile
+define Build/Compile
+	# 1. Strip the poisoned host path
+	find $(PKG_BUILD_DIR) -name Makefile -exec $(SED) 's|-I/usr/include||g' {} +
+	# 2. Safety check: ensure any stray poppler paths have the -I prefix
+	find $(PKG_BUILD_DIR) -name Makefile -exec $(SED) 's| /poppler|-I$(STAGING_DIR)/usr/include/poppler|g' {} +
+	$(call Build/Compile/Default)
 endef
 
 define Package/openprinting-cups-filters/install
@@ -93,3 +110,4 @@ define Package/postinst
 endef
 
 $(eval $(call BuildPackage,openprinting-cups-filters))
+

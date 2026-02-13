@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=cups
-PKG_VERSION:=2.4.7
+PKG_VERSION:=2.4.16
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-source.tar.gz
 PKG_SOURCE_URL:=https://github.com/OpenPrinting/cups/releases/download/v$(PKG_VERSION)/
-PKG_MD5SUM:=e0a5ddbf53dfad41da26fc1ef60b2256
+PKG_MD5SUM:=53cccb5d69eaed7e4c6fe66fa12b11c4
 
 TARGET_LDFLAGS+=-Wl,-rpath-link=$(STAGING_DIR)/usr/lib
 
@@ -28,7 +28,7 @@ define Package/cups
 $(call Package/cups/Default)
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+libcups +libcupsmime +libcupscgi +libcupsppdc +libcupsimage +libusb-1.0 +libstdcpp
+  DEPENDS:=+libcups +libcupsimage +libusb-1.0 +libstdcpp +libopenssl
   TITLE:=Common UNIX Printing System (daemon)
 endef
 
@@ -58,7 +58,7 @@ define Package/cups-client
 $(call Package/cups/Default)
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+libcups +libcupsimage +libcupsmime
+  DEPENDS:=+libcups +libcupsimage
   TITLE:=Common UNIX Printing System - Client commands
 endef
 
@@ -98,7 +98,7 @@ define Package/libcups
 $(call Package/cups/Default)
   SECTION:=libs
   CATEGORY:=Libraries
-  DEPENDS:=+zlib +libpthread +libpng +libjpeg +LIBCUPS_GNUTLS:libgnutls +LIBCUPS_OPENSSL:libopenssl +libdbus +libavahi-client
+  DEPENDS:=+zlib +libpthread +libpng +libjpeg +LIBCUPS_GNUTLS:libgnutls +libopenssl +libavahi-client +libavahi-common
   TITLE:=Common UNIX Printing System - Core library
 endef
 
@@ -106,14 +106,14 @@ define Package/libcups/config
 	if PACKAGE_libcups
 		config LIBCUPS_GNUTLS
 			bool "Compile with GnuTLS support"
-			default y
+			default n
 			help
 				Use GnuTLS for SSL
 	endif
 	if PACKAGE_libcups
 		config LIBCUPS_OPENSSL
 			bool "Compile with OpenSSL support"
-			default n
+			default y
 			help
 				Use OpenSSL for SSL
 	endif
@@ -402,7 +402,7 @@ define Build/Configure
 		--disable-acl \
 		--enable-dbus \
 		--enable-avahi \
-		--with-dnssd=no \
+		--with-dnssd=yes \
 		--disable-pam \
 		--with-tls=$(if $(LIBCUPS_OPENSSL),gnutls,openssl) \
 		--disable-gssapi \
