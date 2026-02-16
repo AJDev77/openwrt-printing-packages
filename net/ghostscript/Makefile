@@ -38,6 +38,8 @@ define Package/ghostscript/description
 	Ghostscript, an interpreter for the PostScript language and for PDF.
 endef
 
+TARGET_CFLAGS += -Wno-error=incompatible-pointer-types
+
 define Build/Configure
 	(cd $(PKG_BUILD_DIR) && $(RM) -r expat jasper lcms2 lcms libpng tiff zlib)
 	$(call Build/Configure/Default, \
@@ -74,8 +76,10 @@ define Host/Configure
 	--without-libpaper \
 	--with-libiconv=no \
 	--disable-gtk \
-	--enable-cups \
-	--without-libidn)
+	--disable-cups \
+	--without-libidn \
+	--disable-dbus \
+	--without-libcups)
 endef
 
 # Patches cannot be applied to the host build
