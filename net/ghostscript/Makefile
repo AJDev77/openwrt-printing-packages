@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ghostscript
-PKG_VERSION:=10.02.1
-PKG_VERSION_LIBDIR:=10.02.1
+PKG_VERSION:=10.06.0
+PKG_VERSION_LIBDIR:=10.06.0
 PKG_RELEASE:=1
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10021/$(PKG-SOURCE)
-PKG_MD5SUM:=dc23aa0f3fbe7e7f68e8a96cb367e90d
+PKG_SOURCE_URL:=https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10060/$(PKG-SOURCE)
+PKG_MD5SUM:=d472f289582b209731954642bd34ca86
 
 PKG_BUILD_DEPENDS:=ghostscript/host
 PKG_INSTALL:=1
@@ -39,6 +39,17 @@ define Package/ghostscript/description
 endef
 
 TARGET_CFLAGS += -Wno-error=incompatible-pointer-types
+TARGET_CFLAGS += \
+    -DARCH_ALIGN_SHORT_MOD=2 \
+    -DARCH_ALIGN_INT_MOD=4 \
+    -DARCH_ALIGN_LONG_MOD=8 \
+    -DARCH_ALIGN_PTR_MOD=8 \
+    -DARCH_ALIGN_FLOAT_MOD=4 \
+    -DARCH_ALIGN_DOUBLE_MOD=8 \
+    -DARCH_ALIGN_UINT64_T_MOD=8 \
+    -DARCH_SIZEOF_PTR=8 \
+    -DARCH_IS_BIG_ENDIAN=0 \
+    -DARCH_ARITH_RSHIFT=2
 
 define Build/Configure
 	(cd $(PKG_BUILD_DIR) && $(RM) -r expat jasper lcms2 lcms libpng tiff zlib)
